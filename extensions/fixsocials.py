@@ -27,7 +27,7 @@ class FixSocials(Extension):
     @cooldown(Buckets.USER, 1, 3)
     async def quickvids_ctxmenu(self, ctx: ContextMenuContext):
         message: Message = ctx.target
-        (>
+        (
             tiktok_urls,
             instagram_urls,
             twitter_urls,
