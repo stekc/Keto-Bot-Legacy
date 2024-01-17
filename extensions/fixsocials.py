@@ -1,4 +1,5 @@
 import re, aiohttp, json, asyncio, pycurl
+from pytube import YouTube 
 from aiocache import cached
 from interactions import (
     CommandType,
@@ -26,7 +27,7 @@ class FixSocials(Extension):
     @cooldown(Buckets.USER, 1, 3)
     async def quickvids_ctxmenu(self, ctx: ContextMenuContext):
         message: Message = ctx.target
-        (
+        (>
             tiktok_urls,
             instagram_urls,
             twitter_urls,
@@ -293,20 +294,37 @@ class FixSocials(Extension):
                     )
 
         for url in youtube_urls:
-            if isinstance(message, ContextMenuContext):
-                await message.respond(
-                    url[0]
-                    .replace(
-                        "https://youtube.com/watch?v=",
-                        "https://lillieh1000.gay/yt/?videoID=",
+            try:
+                yt = YouTube(url[0])
+                video_title = yt.title
+                video_url = yt.streams.get_highest_resolution().url
+                video_creator = yt.author
+
+                hyperlink_text = f"**{video_title}** by {video_creator}"
+
+                if isinstance(message, ContextMenuContext):
+                    await message.respond(
+                        f"[{hyperlink_text}]({video_url})",
+                        components=components,
+                        allowed_mentions=AllowedMentions.none(),                       
                     )
-                    .replace(
-                        "https://youtu.be/", "https://lillieh1000.gay/yt/?videoID="
+                else:
+                    await message.reply(
+                        f"[{hyperlink_text}]({video_url})",
+                        components=components,
+                        allowed_mentions=AllowedMentions.none(),
                     )
-                    + "#",
-                    components=components,
-                    allowed_mentions=AllowedMentions.none(),
-                )
+                    await asyncio.sleep(0.1)
+                    await message.suppress_embeds() if (
+                        await message.guild.fetch_member(self.bot.user.id)
+                    ).has_permission(Permissions.MANAGE_MESSAGES) else None
+                    if vote_button and embed:
+                        await message.channel.send(
+                            components=vote_button, embed=embed, delete_after=20
+                        )
+            except Exception as e:
+                print(f"Error processing YouTube URL: {url[0]} - {str(e)}")
+
 
     @cached(ttl=86400)
     async def get_final_url(self, url):
@@ -327,7 +345,10 @@ class FixSocials(Extension):
             r"(https:\/\/(www.)?(twitter|x)\.com\/[a-zA-Z0-9_]+\/status\/[0-9]+)"
         )
         reddit_regex = r"(https?://(?:www\.)?(?:old\.)?reddit\.com/r/[A-Za-z0-9_]+/(?:comments|s)/[A-Za-z0-9_]+(?:/[^/ ]+)?(?:/\w+)?)|(https?://(?:www\.)?redd\.it/[A-Za-z0-9]+)"
-        youtube_regex = r"(https:\/\/(www\.)?(youtube\.com\/watch\?v=[A-Za-z0-9_]+|youtu\.be\/[A-Za-z0-9_]+))"
+        youtube_regex = r"(https?://(?:www\.)?(?:youtube\.com\/(?:[^/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=|shorts\/|c\/\S+\/(?:videos)\/)|youtu\.be\/)([a-zA-Z0-9_-]+))"
+
+
+
 
         tiktok_urls = re.findall(tiktok_regex, text)
         instagram_urls = re.findall(instagram_regex, text)
@@ -336,6 +357,7 @@ class FixSocials(Extension):
         )
         reddit_urls = re.findall(reddit_regex, text)
         youtube_urls = re.findall(youtube_regex, text)
+       
 
         return tiktok_urls, instagram_urls, twitter_urls, reddit_urls, youtube_urls
 
