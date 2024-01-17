@@ -6,3 +6,4 @@ psutil==5.9.6
 humanize==4.8.0
 python-dateutil==2.8.2
 pycurl==7.45.2
+pytube==15.0.0
