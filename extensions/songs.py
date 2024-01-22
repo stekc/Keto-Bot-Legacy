@@ -41,7 +41,9 @@ class Songs(Extension):
 
         if spotify:
             spotify_button = Button(
-                style=ButtonStyle.URL, emoji="<:spotify:1140397216066977903>", url=spotify
+                style=ButtonStyle.URL,
+                emoji="<:spotify:1140397216066977903>",
+                url=spotify,
             )
         if applemusic:
             applemusic_button = Button(
