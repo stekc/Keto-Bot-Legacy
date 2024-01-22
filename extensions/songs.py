@@ -101,14 +101,27 @@ class Songs(Extension):
         else:
             return
 
-        embed, components = await self.process_song_link(link)
-        if not (embed and components):
-            return
         if fmbot:
             await event.message.delete()
-            await event.message.channel.send(components=components, embed=embed)
+            msg = await event.message.channel.send(
+                "<a:discordloading:1199066225381228546> Fetching song data...",
+                allowed_mentions=AllowedMentions.none(),
+            )
         else:
-            await event.message.reply(
+            msg = await event.message.reply(
+                "<a:discordloading:1199066225381228546> Fetching song data...",
+                allowed_mentions=AllowedMentions.none(),
+            )
+
+        embed, components = await self.process_song_link(link)
+        if not (embed and components):
+            return await msg.delete()
+
+        if fmbot:
+            await msg.edit(content="", components=components, embed=embed)
+        else:
+            await msg.edit(
+                content="",
                 components=components,
                 embed=embed,
                 allowed_mentions=AllowedMentions.none(),
