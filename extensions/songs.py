@@ -132,7 +132,7 @@ class Songs(Extension):
             allowed_mentions=AllowedMentions.none(),
         )
         await asyncio.sleep(0.1)
-        await event.message.suppress_embeds() if (
+        await event.message.suppress_embeds() if not fmbot and (
             await event.message.guild.fetch_member(self.bot.user.id)
         ).has_permission(Permissions.MANAGE_MESSAGES) else None
 
