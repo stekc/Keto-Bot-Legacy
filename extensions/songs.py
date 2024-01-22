@@ -117,15 +117,12 @@ class Songs(Extension):
         if not (embed and components):
             return await msg.delete()
 
-        if fmbot:
-            await msg.edit(content="", components=components, embed=embed)
-        else:
-            await msg.edit(
-                content="",
-                components=components,
-                embed=embed,
-                allowed_mentions=AllowedMentions.none(),
-            )
+        await msg.edit(
+            content="",
+            components=components,
+            embed=embed,
+            allowed_mentions=AllowedMentions.none(),
+        )
         await asyncio.sleep(0.1)
         await event.message.suppress_embeds() if (
             await event.message.guild.fetch_member(self.bot.user.id)
