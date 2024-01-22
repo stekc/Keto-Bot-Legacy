@@ -36,14 +36,19 @@ class Songs(Extension):
             title, artist, thumbnail, spotify, applemusic = await self.get_music(link)
         except TypeError:
             return None, None
-        spotify_button = Button(
-            style=ButtonStyle.URL, emoji="<:spotify:1140397216066977903>", url=spotify
-        )
-        applemusic_button = Button(
-            style=ButtonStyle.URL,
-            emoji="<:applemusic:1140397213621686396>",
-            url=applemusic,
-        )
+        if not (title and artist and thumbnail):
+            return None, None
+
+        if spotify:
+            spotify_button = Button(
+                style=ButtonStyle.URL, emoji="<:spotify:1140397216066977903>", url=spotify
+            )
+        if applemusic:
+            applemusic_button = Button(
+                style=ButtonStyle.URL,
+                emoji="<:applemusic:1140397213621686396>",
+                url=applemusic,
+            )
 
         embed = Embed(
             author={"name": f"{title} - {artist}", "icon_url": thumbnail},
@@ -102,7 +107,6 @@ class Songs(Extension):
             return
 
         if fmbot:
-            await event.message.delete()
             msg = await event.message.channel.send(
                 "<a:discordloading:1199066225381228546> Fetching song data...",
                 allowed_mentions=AllowedMentions.none(),
@@ -116,6 +120,8 @@ class Songs(Extension):
         embed, components = await self.process_song_link(link)
         if not (embed and components):
             return await msg.delete()
+
+        await event.message.delete() if fmbot else None
 
         await msg.edit(
             content="",
