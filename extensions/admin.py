@@ -5,7 +5,9 @@ from interactions import (
     SlashContext,
     File,
     Embed,
+    Permissions,
     slash_command,
+    slash_default_member_permission,
 )
 from io import BytesIO
 from extensions.fixsocials import FixSocials
@@ -21,7 +23,7 @@ class Admin(Extension):
     songs_instance = Songs(bot=AutoShardedClient())
     utils_instance = Utilities(bot=AutoShardedClient())
 
-    async def convert_bytes_to_mb_async(self, bytes):
+    async def convert_bytes_to_mb(self, bytes):
         mb = bytes / (1024 * 1024)
         return "{:.2f} MB".format(mb)
 
@@ -34,6 +36,7 @@ class Admin(Extension):
         sub_cmd_description="View detailed cache info",
         scopes=[os.getenv("MAIN_GUILD_ID")],
     )
+    @slash_default_member_permission(Permissions.ADMINISTRATOR)
     async def cache(self, ctx: SlashContext):
         if ctx.author != self.bot.owner:
             return await ctx.send(
@@ -55,7 +58,7 @@ class Admin(Extension):
 
         for cache_name, cache_instance in cache_instances:
             cache_size = cache_instance.currsize
-            cache_size_mb = await self.convert_bytes_to_mb_async(cache_size)
+            cache_size_mb = await self.convert_bytes_to_mb(cache_size)
             cache_items = cache_instance.items()
 
             total_size += cache_size
@@ -71,7 +74,7 @@ class Admin(Extension):
                 f"- {cache_name}\n+ Size: {cache_size_mb}\n+ Items: {cache_items}\n\n"
             )
 
-        total_size_mb = await self.convert_bytes_to_mb_async(total_size)
+        total_size_mb = await self.convert_bytes_to_mb(total_size)
         file_msg += f"- Total Size: {total_size_mb}\n- Total Items: {total_items}"
 
         public_msg.set_footer(
