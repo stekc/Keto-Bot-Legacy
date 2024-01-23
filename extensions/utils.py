@@ -20,7 +20,7 @@ from utils.colorthief import get_color
 
 class Utilities(Extension):
     bot: AutoShardedClient
-    lru_cache = LRUCache(maxsize=10000000, getsizeof=asizeof.asizeof)
+    lru_cache = LRUCache(maxsize=104857600, getsizeof=asizeof.asizeof)
     start_time = time.time()
     load_dotenv()
 

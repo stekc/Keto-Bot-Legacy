@@ -5,7 +5,7 @@ from pympler import asizeof
 from cachetools import TTLCache, LRUCache
 from aiohttp import ClientSession, ClientTimeout
 
-lru_cache = LRUCache(maxsize=10000000, getsizeof=asizeof.asizeof)
+lru_cache = LRUCache(maxsize=104857600, getsizeof=asizeof.asizeof)
 
 
 @cached(lru_cache)

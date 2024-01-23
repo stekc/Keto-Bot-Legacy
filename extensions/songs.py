@@ -24,7 +24,7 @@ from utils.colorthief import get_color
 
 class Songs(Extension):
     bot: AutoShardedClient
-    lru_cache = LRUCache(maxsize=10000000, getsizeof=asizeof.asizeof)
+    lru_cache = LRUCache(maxsize=104857600, getsizeof=asizeof.asizeof)
 
     song_pattern = re.compile(
         r"https:\/\/(open.spotify.com\/track\/[A-Za-z0-9]+|music.apple.com\/[a-zA-Z][a-zA-Z]?\/album\/[a-zA-Z\d%\(\)-]+/[\d]{1,10}\?i=[\d]{1,15}|spotify.link\/[A-Za-z0-9]+)"

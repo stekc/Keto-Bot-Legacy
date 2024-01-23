@@ -58,7 +58,9 @@ class Admin(Extension):
 
         for cache_name, cache_instance in cache_instances:
             cache_size = cache_instance.currsize
+            cache_max_size = cache_instance.maxsize
             cache_size_mb = await self.convert_bytes_to_mb(cache_size)
+            cache_max_size_mb = await self.convert_bytes_to_mb(cache_max_size)
             cache_items = cache_instance.items()
 
             total_size += cache_size
@@ -66,7 +68,7 @@ class Admin(Extension):
 
             public_msg.add_field(
                 name=cache_name,
-                value=f"Size: {cache_size_mb}\nItems: {len(cache_items)}",
+                value=f"Size: {cache_size_mb}/{cache_max_size_mb}\nItems: {len(cache_items)}",
                 inline=True if "FixSocials" in cache_name else False,
             )
 

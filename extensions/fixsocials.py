@@ -27,8 +27,8 @@ from utils.colorthief import get_color
 
 class FixSocials(Extension):
     bot: AutoShardedClient
-    lru_cache = LRUCache(maxsize=10000000, getsizeof=asizeof.asizeof)
-    ttl_cache = TTLCache(maxsize=10000000, ttl=600, getsizeof=asizeof.asizeof)
+    lru_cache = LRUCache(maxsize=104857600, getsizeof=asizeof.asizeof)
+    ttl_cache = TTLCache(maxsize=104857600, ttl=3600, getsizeof=asizeof.asizeof)
 
     @context_menu(name="Delete Fixed Embed", context_type=CommandType.MESSAGE)
     @cooldown(Buckets.USER, 1, 3)
