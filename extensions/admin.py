@@ -13,7 +13,7 @@ from io import BytesIO
 from extensions.fixsocials import FixSocials
 from extensions.songs import Songs
 from extensions.utils import Utilities
-from utils.colorthief import lru_cache as lru_size_colorthief
+from utils.colorthief import lfu_cache as lfu_size_colorthief
 
 
 class Admin(Extension):
@@ -45,10 +45,10 @@ class Admin(Extension):
 
         cache_instances = [
             ("FixSocials TTL Cache", self.fix_socials_instance.ttl_cache),
-            ("FixSocials LRU Cache", self.fix_socials_instance.lru_cache),
-            ("Songs LRU Cache", self.songs_instance.lru_cache),
-            ("Utils LRU Cache", self.utils_instance.lru_cache),
-            ("ColorThief LRU Cache", lru_size_colorthief),
+            ("FixSocials LFU Cache", self.fix_socials_instance.lfu_cache),
+            ("Songs LFU Cache", self.songs_instance.lfu_cache),
+            ("Utils LFU Cache", self.utils_instance.lfu_cache),
+            ("ColorThief LFU Cache", lfu_size_colorthief),
         ]
 
         total_size = 0

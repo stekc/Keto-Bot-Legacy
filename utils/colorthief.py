@@ -2,13 +2,13 @@ import io, re, os
 import fast_colorthief
 from asyncache import cached
 from pympler import asizeof
-from cachetools import TTLCache, LRUCache
+from cachetools import TTLCache, LFUCache
 from aiohttp import ClientSession, ClientTimeout
 
-lru_cache = LRUCache(maxsize=104857600, getsizeof=asizeof.asizeof)
+lfu_cache = LFUCache(maxsize=104857600, getsizeof=asizeof.asizeof)
 
 
-@cached(lru_cache)
+@cached(lfu_cache)
 async def get_color(query):
     quality = os.getenv("COLOR_FETCH_QUALITY", default="low")
 

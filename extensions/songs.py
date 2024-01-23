@@ -1,7 +1,7 @@
 import aiohttp, json, asyncio, re
 from asyncache import cached
 from pympler import asizeof
-from cachetools import LRUCache
+from cachetools import LFUCache
 from interactions import (
     CommandType,
     AutoShardedClient,
@@ -24,14 +24,14 @@ from utils.colorthief import get_color
 
 class Songs(Extension):
     bot: AutoShardedClient
-    lru_cache = LRUCache(maxsize=104857600, getsizeof=asizeof.asizeof)
+    lfu_cache = LFUCache(maxsize=104857600, getsizeof=asizeof.asizeof)
 
     song_pattern = re.compile(
         r"https:\/\/(open.spotify.com\/track\/[A-Za-z0-9]+|music.apple.com\/[a-zA-Z][a-zA-Z]?\/album\/[a-zA-Z\d%\(\)-]+/[\d]{1,10}\?i=[\d]{1,15}|spotify.link\/[A-Za-z0-9]+)"
     )
     fmbot_id = 356268235697553409
 
-    @cached(lru_cache)
+    @cached(lfu_cache)
     async def process_song_link(self, link):
         try:
             title, artist, thumbnail, spotify, applemusic = await self.get_music(link)
@@ -137,7 +137,7 @@ class Songs(Extension):
             await event.message.guild.fetch_member(self.bot.user.id)
         ).has_permission(Permissions.MANAGE_MESSAGES) else None
 
-    @cached(lru_cache)
+    @cached(lfu_cache)
     async def get_music(self, url):
         async with aiohttp.ClientSession() as session:
             async with session.get(

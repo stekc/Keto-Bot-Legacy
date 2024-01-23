@@ -1,7 +1,7 @@
 import re, aiohttp, json, asyncio
 from asyncache import cached
 from pympler import asizeof
-from cachetools import TTLCache, LRUCache
+from cachetools import TTLCache, LFUCache
 from interactions import (
     CommandType,
     AutoShardedClient,
@@ -27,7 +27,7 @@ from utils.colorthief import get_color
 
 class FixSocials(Extension):
     bot: AutoShardedClient
-    lru_cache = LRUCache(maxsize=104857600, getsizeof=asizeof.asizeof)
+    lfu_cache = LFUCache(maxsize=104857600, getsizeof=asizeof.asizeof)
     ttl_cache = TTLCache(maxsize=104857600, ttl=3600, getsizeof=asizeof.asizeof)
 
     @context_menu(name="Delete Fixed Embed", context_type=CommandType.MESSAGE)
@@ -433,7 +433,7 @@ class FixSocials(Extension):
                     allowed_mentions=AllowedMentions.none(),
                 )
 
-    @cached(lru_cache)
+    @cached(lfu_cache)
     async def get_final_url(self, url):
         user_agent = "Wheregoes.com Redirect Checker/1.0"  # A common service used to check redirects
         async with aiohttp.ClientSession() as session:
@@ -459,7 +459,7 @@ class FixSocials(Extension):
                                 return str(response.url).split("?")[0]
                             continue
 
-    @cached(lru_cache)
+    @cached(lfu_cache)
     async def extract_urls(self, text):
         tiktok_regex = r"(https:\/\/(www\.)?(vt|vm)\.tiktok\.com\/[A-Za-z0-9]+|https:\/\/(vx)?tiktok\.com\/@[\w.]+\/video\/[\d]+\/?|https:\/\/(vx)?tiktok\.com\/t\/[a-zA-Z0-9]+\/?)"
         instagram_regex = (
@@ -524,7 +524,7 @@ class FixSocials(Extension):
         except (aiohttp.ClientError, asyncio.TimeoutError):
             return None
 
-    @cached(lru_cache)
+    @cached(lfu_cache)
     async def is_carousel(self, link: str):
         try:
             async with aiohttp.ClientSession() as session:
@@ -535,7 +535,7 @@ class FixSocials(Extension):
         except (aiohttp.ClientError, asyncio.TimeoutError):
             return False
 
-    @cached(lru_cache)
+    @cached(lfu_cache)
     async def format_number_str(self, num):
         if num >= 1000:
             powers = ["", "k", "M", "B", "T"]

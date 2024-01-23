@@ -2,7 +2,7 @@ import os, aiohttp, psutil, platform, uuid, time, datetime
 from dotenv import load_dotenv
 from asyncache import cached
 from pympler import asizeof
-from cachetools import LRUCache
+from cachetools import LFUCache
 from interactions import (
     Extension,
     Embed,
@@ -20,11 +20,11 @@ from utils.colorthief import get_color
 
 class Utilities(Extension):
     bot: AutoShardedClient
-    lru_cache = LRUCache(maxsize=104857600, getsizeof=asizeof.asizeof)
+    lfu_cache = LFUCache(maxsize=104857600, getsizeof=asizeof.asizeof)
     start_time = time.time()
     load_dotenv()
 
-    @cached(lru_cache)
+    @cached(lfu_cache)
     async def get_currency_conversion(
         self, base_currency: str, target_currency: str, api_key: str
     ) -> dict:
