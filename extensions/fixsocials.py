@@ -147,10 +147,7 @@ class FixSocials(Extension):
 
     @listen()
     async def on_message_create(self, event: MessageCreate):
-        if (
-            event.message.author.id == self.bot.user.id
-            or len(event.message.content) > 400
-        ):
+        if event.message.author.id == self.bot.user.id:
             return
 
         (
@@ -162,6 +159,26 @@ class FixSocials(Extension):
         ) = await self.extract_urls(
             event.message.content.replace("https://www.", "https://")
         )
+
+        tiktok_urls = tiktok_urls[:3]
+        instagram_urls = instagram_urls[: max(0, 3 - len(tiktok_urls))]
+        twitter_urls = twitter_urls[
+            : max(0, 3 - len(tiktok_urls) - len(instagram_urls))
+        ]
+        reddit_urls = reddit_urls[
+            : max(0, 3 - len(tiktok_urls) - len(instagram_urls) - len(twitter_urls))
+        ]
+        youtube_urls = youtube_urls[
+            : max(
+                0,
+                3
+                - len(tiktok_urls)
+                - len(instagram_urls)
+                - len(twitter_urls)
+                - len(reddit_urls),
+            )
+        ]
+
         await self.process_urls(
             event.message,
             tiktok_urls,
