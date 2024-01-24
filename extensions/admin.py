@@ -47,7 +47,7 @@ class Admin(Extension):
             ("FixSocials TTL Cache", self.fix_socials_instance.ttl_cache),
             ("FixSocials LFU Cache", self.fix_socials_instance.lfu_cache),
             ("Songs LFU Cache", self.songs_instance.lfu_cache),
-            ("Utils LFU Cache", self.utils_instance.lfu_cache),
+            ("Utilities TTL Cache", self.utils_instance.ttl_cache),
             ("ColorThief LFU Cache", lfu_size_colorthief),
         ]
 
