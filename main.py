@@ -18,7 +18,7 @@ from core.extensions_loader import load_extensions
 if __name__ == "__main__":
     if not os.path.exists(".env"):
         print(
-"""
+            """
 ###############################################################
 # Rename .env.example to .env and fill in the required values #
 ###############################################################
