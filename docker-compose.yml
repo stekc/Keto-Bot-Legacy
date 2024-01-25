@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  keto:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: ["python", "main.py"]
+    env_file:
+      - .env

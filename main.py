@@ -1,4 +1,4 @@
-import os
+import os, time
 from utils.topgg import update_topgg_count
 from utils.status import status_refresh_interval
 from dotenv import load_dotenv
@@ -16,7 +16,16 @@ from core.extensions_loader import load_extensions
 
 
 if __name__ == "__main__":
-    load_dotenv()
+    if not os.path.exists(".env"):
+        print(
+"""
+###############################################################
+# Rename .env.example to .env and fill in the required values #
+###############################################################
+"""
+        )
+        time.sleep(300)
+        exit(1)
 
     logger = init_logging()
 
