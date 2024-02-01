@@ -1,4 +1,4 @@
-import os, aiohttp, psutil, platform, uuid, time
+import os, aiohttp, psutil, platform, time, os
 from dotenv import load_dotenv
 from urllib.parse import quote
 from asyncache import cached
@@ -341,17 +341,29 @@ class Utilities(Extension):
     @slash_command(name="stats", description="View bot statistics")
     @cooldown(Buckets.GUILD, 1, 5)
     async def stats(self, ctx: SlashContext):
+        bot_ram = psutil.Process().memory_info()
+        bot_ram_formatted = f"{bot_ram.rss >> 20} MB"
         ram = f"{psutil.virtual_memory().used >> 20} MB / {psutil.virtual_memory().total >> 20} MB"
         cpu = f"{psutil.cpu_percent(interval=1)}%"
-        randstr = uuid.uuid4().hex.upper()[0:16]
+        system = (
+            (
+                lambda f: (
+                    f.read().split('PRETTY_NAME="')[1].split('"')[0]
+                    if f and not f.closed
+                    else platform.system()
+                )
+            )(open("/etc/os-release", "r", errors="ignore"))
+            if os.path.exists("/etc/os-release")
+            else platform.system()
+        )
         embed = Embed(title="Bot Stats")
         embed.color = 0x3372A6
         embed.set_image(
-            url=f"https://opengraph.githubassets.com/{randstr}/stekc/Keto-Bot"
+            url=f"https://opengraph.githubassets.com/{time.time()}/stekc/Keto-Bot"
         )
-        embed.add_field(name="OS", value=platform.system(), inline=True)
+        embed.add_field(name="OS", value=f"{system}", inline=True)
         embed.add_field(name="CPU", value=cpu, inline=True)
-        embed.add_field(name="RAM", value=ram, inline=True)
+        embed.add_field(name="RAM", value=f"{bot_ram_formatted} ({ram})", inline=True)
         embed.add_field(
             name="Bot Uptime",
             value=f"<t:{int(self.start_time)}:R>\n<t:{int(self.start_time)}:D>",
