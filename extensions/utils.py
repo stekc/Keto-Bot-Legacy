@@ -153,17 +153,9 @@ class Utilities(Extension):
         cpu = f"{psutil.cpu_percent(interval=1)}%"
         randstr = uuid.uuid4().hex.upper()[0:16]
         embed = Embed(title="Bot Stats")
-        embed.color = await get_color(self.bot.user.avatar_url)
+        embed.color = 0x3372A6
         embed.set_image(
             url=f"https://opengraph.githubassets.com/{randstr}/stekc/Keto-Bot"
-        )
-        embed.add_field(
-            name="Guilds (Shards)",
-            value=str(len(self.bot.guilds))
-            + " ("
-            + str(len(set(state.shard_id for state in self.bot.shards)))
-            + ")",
-            inline=False,
         )
         embed.add_field(name="OS", value=platform.system(), inline=True)
         embed.add_field(name="CPU", value=cpu, inline=True)
@@ -177,9 +169,6 @@ class Utilities(Extension):
             name="Python Version", value=platform.python_version(), inline=True
         )
         embed.add_field(name="interactions.py Version", value=__version__, inline=True)
-        embed.set_footer(
-            text="https://github.com/stekc/Keto-Bot", icon_url=self.bot.owner.avatar_url
-        )
         await ctx.respond(embed=embed)
 
 
