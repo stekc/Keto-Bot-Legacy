@@ -1,16 +1,26 @@
-import os, aiohttp, psutil, platform, uuid, time, datetime
+import os, aiohttp, psutil, platform, uuid, time
 from dotenv import load_dotenv
+from urllib.parse import quote
 from asyncache import cached
 from pympler import asizeof
-from cachetools import TTLCache
+from cachetools import TTLCache, LFUCache
 from interactions import (
     Extension,
     Embed,
     AutoShardedClient,
+    Message,
     SlashContext,
     __version__,
+    Button,
+    ButtonStyle,
+    CommandType,
+    ContextMenuContext,
+    Modal,
+    ModalContext,
+    ShortText,
     slash_command,
     slash_option,
+    context_menu,
     OptionType,
     cooldown,
     Buckets,
@@ -20,9 +30,57 @@ from utils.colorthief import get_color
 
 class Utilities(Extension):
     bot: AutoShardedClient
+    lfu_cache = LFUCache(maxsize=104857600, getsizeof=asizeof.asizeof)
     ttl_cache = TTLCache(maxsize=104857600, ttl=86400, getsizeof=asizeof.asizeof)
     start_time = time.time()
     load_dotenv()
+    language_codes = {
+        "english": "en",
+        "russian": "ru",
+        "spanish": "es",
+        "french": "fr",
+        "german": "de",
+        "chinese": "zh",
+        "japanese": "ja",
+        "korean": "ko",
+        "arabic": "ar",
+        "hindi": "hi",
+        "bengali": "bn",
+        "portuguese": "pt",
+        "italian": "it",
+        "dutch": "nl",
+        "greek": "el",
+        "turkish": "tr",
+        "swedish": "sv",
+        "norwegian": "no",
+        "danish": "da",
+        "finnish": "fi",
+        "polish": "pl",
+        "czech": "cs",
+        "hungarian": "hu",
+        "romanian": "ro",
+        "thai": "th",
+        "vietnamese": "vi",
+        "indonesian": "id",
+        "malay": "ms",
+        "hebrew": "he",
+        "tagalog": "tl",
+    }
+
+    @cached(lfu_cache)
+    async def get_translation(self, text: str, target: str, source: str = "auto"):
+        translate_url = os.getenv("LINGVA_URL")
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                translate_url + f"/api/v1/{source}/{target}/{quote(text)}"
+            ) as response:
+                if not response.status == 200:
+                    raise Exception(f"{translate_url} returned {response.status}")
+                data = await response.json()
+                translation = data.get("translation", "")
+                detected_language = data.get("info", {}).get("detectedSource", "")
+                return translation, detected_language
 
     @cached(ttl_cache)
     async def get_currency_conversion(
@@ -42,6 +100,138 @@ class Utilities(Extension):
                     return None
                 data = await response.json()
                 return data
+
+    @context_menu(name="Translate Message", context_type=CommandType.MESSAGE)
+    @cooldown(Buckets.USER, 2, 10)
+    async def translate_ctxmenu(self, ctx: ContextMenuContext):
+        message: Message = ctx.target
+        jump_button = Button(
+            style=ButtonStyle.URL,
+            label="Jump to Original Message",
+            url=message.jump_url,
+        )
+
+        translate_instance = os.getenv("LINGVA_URL")
+        if not translate_instance:
+            return await ctx.respond(
+                "This command is unavailable because no Lingva instance is set.\nA list of instances can be found on https://github.com/thedaviddelta/lingva-translate?tab=readme-ov-file#instances.",
+                ephemeral=True,
+            )
+
+        lang_modal = Modal(
+            ShortText(
+                label="Language to translate to",
+                value="en",
+                custom_id="short_text",
+                min_length=2,
+                max_length=2,
+                required=True,
+            ),
+            title="Translate",
+            custom_id="lang_modal",
+        )
+
+        await ctx.send_modal(modal=lang_modal)
+        modal_ctx: ModalContext = await ctx.bot.wait_for_modal(lang_modal)
+
+        to_language = self.language_codes.get(
+            modal_ctx.responses["short_text"].lower(),
+            modal_ctx.responses["short_text"].lower().lower(),
+        )
+        from_language = "auto"
+
+        if to_language not in self.language_codes.values():
+            return await modal_ctx.send(
+                f"Invalid language to translate to `{to_language}`.", ephemeral=True
+            )
+        if (
+            from_language not in self.language_codes.values()
+            and from_language != "auto"
+        ):
+            return await modal_ctx.send(
+                f"Invalid language to translate from `{from_language}`.", ephemeral=True
+            )
+
+        translation, detected_language = await self.get_translation(
+            message.content, to_language, from_language
+        )
+        if not translation:
+            return await modal_ctx.send(
+                "Something went wrong trying to translate that.", ephemeral=True
+            )
+        embed = Embed(
+            title=translation, color=await get_color(ctx.target.author.avatar_url)
+        )
+        embed.set_author(
+            name=f"{detected_language if detected_language else from_language} -> {to_language}"
+        )
+        embed.set_footer(text=str(ctx.target.author.id))
+        await modal_ctx.send(embed=embed, components=[jump_button])
+
+    @slash_command(name="translate", description="Translate text")
+    @slash_option(
+        name="text",
+        description="Text to translate",
+        required=True,
+        opt_type=OptionType.STRING,
+    )
+    @slash_option(
+        name="to_language",
+        description="Language to translate to",
+        required=True,
+        opt_type=OptionType.STRING,
+    )
+    @slash_option(
+        name="from_language",
+        description="Language to translate from",
+        required=False,
+        opt_type=OptionType.STRING,
+    )
+    @cooldown(Buckets.USER, 2, 10)
+    async def translate(
+        self,
+        ctx: SlashContext,
+        text: str,
+        to_language: str,
+        from_language: str = "auto",
+    ):
+        translate_instance = os.getenv("LINGVA_URL")
+        if not translate_instance:
+            return await ctx.respond(
+                "This command is unavailable because no Lingva instance is set.\nA list of instances can be found on https://github.com/thedaviddelta/lingva-translate?tab=readme-ov-file#instances.",
+                ephemeral=True,
+            )
+
+        to_language = self.language_codes.get(to_language.lower(), to_language.lower())
+        from_language = self.language_codes.get(
+            from_language.lower(), from_language.lower()
+        )
+
+        if to_language not in self.language_codes.values():
+            return await ctx.respond(
+                f"Invalid language to translate to `{to_language}`.", ephemeral=True
+            )
+        if (
+            from_language not in self.language_codes.values()
+            and from_language != "auto"
+        ):
+            return await ctx.respond(
+                f"Invalid language to translate from `{from_language}`.", ephemeral=True
+            )
+
+        translation, detected_language = await self.get_translation(
+            text, to_language, from_language
+        )
+        if not translation:
+            return await ctx.respond(
+                "Something went wrong trying to translate that.", ephemeral=True
+            )
+        embed = Embed(title=translation, color=await get_color(ctx.author.avatar_url))
+        embed.set_author(
+            name=f"{detected_language if detected_language else from_language} -> {to_language}"
+        )
+        embed.set_footer(text=str(ctx.author.id))
+        await ctx.respond(embed=embed)
 
     @slash_command(name="currency", description="Convert currencies")
     @slash_option(

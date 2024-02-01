@@ -48,6 +48,7 @@ class Admin(Extension):
             ("FixSocials LFU Cache", self.fix_socials_instance.lfu_cache),
             ("Songs LFU Cache", self.songs_instance.lfu_cache),
             ("Utilities TTL Cache", self.utils_instance.ttl_cache),
+            ("Utilities LFU Cache", self.utils_instance.lfu_cache),
             ("ColorThief LFU Cache", lfu_size_colorthief),
         ]
 
@@ -69,7 +70,11 @@ class Admin(Extension):
             public_msg.add_field(
                 name=cache_name,
                 value=f"Size: {cache_size_mb}/{cache_max_size_mb}\nItems: {len(cache_items)}",
-                inline=True if "FixSocials" in cache_name else False,
+                inline=(
+                    True
+                    if "FixSocials" in cache_name or "Utilities" in cache_name
+                    else False
+                ),
             )
 
             file_msg += (
