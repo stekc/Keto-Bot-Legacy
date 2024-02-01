@@ -53,9 +53,11 @@ class Users(Extension):
         )
         embed.add_field(
             name="Boosting for",
-            value=f"<t:{str(int(user.premium_since.timestamp()))}:R>\n<t:{str(int(user.premium_since.timestamp()))}:D>"
-            if user.premium_since
-            else "Not boosting",
+            value=(
+                f"<t:{str(int(user.premium_since.timestamp()))}:R>\n<t:{str(int(user.premium_since.timestamp()))}:D>"
+                if user.premium_since
+                else "Not boosting"
+            ),
             inline=True,
         )
         await ctx.send(embed=embed)

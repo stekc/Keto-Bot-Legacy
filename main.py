@@ -43,9 +43,11 @@ if __name__ == "__main__":
         fetch_members=False,
         send_not_ready_messages=True,
         disable_dm_commands=True,
-        debug_scope=os.getenv("MAIN_GUILD_ID")
-        if os.getenv("SINGLE_SERVER") == "true"
-        else False,
+        debug_scope=(
+            os.getenv("MAIN_GUILD_ID")
+            if os.getenv("SINGLE_SERVER") == "true"
+            else False
+        ),
         send_command_tracebacks=False,
     )
 
@@ -66,15 +68,23 @@ if __name__ == "__main__":
             )
             await self.bot.change_presence(
                 activity=activity,
-                status=Status.IDLE
-                if os.getenv("STATUS") == "idle"
-                else Status.DND
-                if os.getenv("STATUS") == "dnd"
-                else Status.INVISIBLE
-                if os.getenv("STATUS") == "invisible"
-                else Status.OFFLINE
-                if os.getenv("STATUS") == "offline"
-                else Status.ONLINE,
+                status=(
+                    Status.IDLE
+                    if os.getenv("STATUS") == "idle"
+                    else (
+                        Status.DND
+                        if os.getenv("STATUS") == "dnd"
+                        else (
+                            Status.INVISIBLE
+                            if os.getenv("STATUS") == "invisible"
+                            else (
+                                Status.OFFLINE
+                                if os.getenv("STATUS") == "offline"
+                                else Status.ONLINE
+                            )
+                        )
+                    )
+                ),
             )
         else:
             activity = Activity.create(
@@ -83,15 +93,23 @@ if __name__ == "__main__":
             )
             await self.bot.change_presence(
                 activity=activity,
-                status=Status.IDLE
-                if os.getenv("STATUS") == "idle"
-                else Status.DND
-                if os.getenv("STATUS") == "dnd"
-                else Status.INVISIBLE
-                if os.getenv("STATUS") == "invisible"
-                else Status.OFFLINE
-                if os.getenv("STATUS") == "offline"
-                else Status.ONLINE,
+                status=(
+                    Status.IDLE
+                    if os.getenv("STATUS") == "idle"
+                    else (
+                        Status.DND
+                        if os.getenv("STATUS") == "dnd"
+                        else (
+                            Status.INVISIBLE
+                            if os.getenv("STATUS") == "invisible"
+                            else (
+                                Status.OFFLINE
+                                if os.getenv("STATUS") == "offline"
+                                else Status.ONLINE
+                            )
+                        )
+                    )
+                ),
             )
 
     bot.start(os.getenv("DISCORD_TOKEN"))

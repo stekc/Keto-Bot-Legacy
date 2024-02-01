@@ -27,8 +27,8 @@ from utils.colorthief import get_color
 
 class FixSocials(Extension):
     bot: AutoShardedClient
-    lfu_cache = LFUCache(maxsize=104857600, getsizeof=asizeof.asizeof)
-    ttl_cache = TTLCache(maxsize=104857600, ttl=3600, getsizeof=asizeof.asizeof)
+    lfu_cache = LFUCache(maxsize=536870912, getsizeof=asizeof.asizeof)
+    ttl_cache = TTLCache(maxsize=104857600, ttl=9000, getsizeof=asizeof.asizeof)
 
     @context_menu(name="Delete Fixed Embed", context_type=CommandType.MESSAGE)
     @cooldown(Buckets.USER, 1, 3)
@@ -228,7 +228,7 @@ class FixSocials(Extension):
             author_link,
         ) = await self.quickvids(
             referenced_message.content.replace(
-                "https://vxtiktok.com/", "https://tiktok.com/"
+                "https://tnktok.com/", "https://tiktok.com/"
             )
         )
 
@@ -244,14 +244,17 @@ class FixSocials(Extension):
         embed.set_author(name="@" + author, icon_url=author_avatar)
         await ctx.send(
             embed=embed,
-            components=components
-            if (
-                history := await ctx.channel.history(
-                    limit=max(5, len(await ctx.channel.history(limit=5).flatten()))
-                ).flatten()
-            )
-            and ctx.message.created_at.timestamp() < history[-1].created_at.timestamp()
-            else None,
+            components=(
+                components
+                if (
+                    history := await ctx.channel.history(
+                        limit=max(5, len(await ctx.channel.history(limit=5).flatten()))
+                    ).flatten()
+                )
+                and ctx.message.created_at.timestamp()
+                < history[-1].created_at.timestamp()
+                else None
+            ),
             ephemeral=True,
         )
 
@@ -279,7 +282,7 @@ class FixSocials(Extension):
                 author_avatar,
                 author_link,
             ) = await self.quickvids(
-                url[0].replace("https://vxtiktok.com/", "https://tiktok.com/")
+                url[0].replace("https://tnktok.com/", "https://tiktok.com/")
             )
             buttons = await self.format_buttons(
                 likes, comments, views, author, author_link
@@ -307,29 +310,31 @@ class FixSocials(Extension):
                         components=buttons,
                     )
                     await asyncio.sleep(0.1)
-                    await message.suppress_embeds() if (
-                        await message.guild.fetch_member(self.bot.user.id)
-                    ).has_permission(Permissions.MANAGE_MESSAGES) else None
+                    (
+                        await message.suppress_embeds()
+                        if (
+                            await message.guild.fetch_member(self.bot.user.id)
+                        ).has_permission(Permissions.MANAGE_MESSAGES)
+                        else None
+                    )
                     if vote_button and embed:
                         await message.channel.send(
                             components=vote_button, embed=embed, delete_after=20
                         )
             else:
-                if url[0].startswith("https://vxtiktok.com/"):
+                if url[0].startswith("https://tnktok.com/"):
                     continue
-                url_list = list(url)
-                url_list[0] = await self.get_final_url(url_list[0])
-                url_list[0] = url_list[0].replace(
-                    "https://www.tiktok.com/", "https://tiktok.com/"
-                )
-                url = tuple(url_list)
-                if not url[0].startswith("https://vxtiktok.com/") and not url[
-                    0
-                ].startswith("https://vxtiktok.com/"):
+                for i in range(len(tiktok_urls)):
+                    url_list = list(tiktok_urls[i])
+                    url_list[0] = url_list[0].replace(
+                        "https://www.tiktok.com/", "https://tiktok.com/"
+                    )
+                    tiktok_urls[i] = tuple(url_list)
+                if not url[0].startswith("https://tnktok.com/"):
                     if isinstance(message, ContextMenuContext):
                         await message.respond(
                             url[0].replace(
-                                "https://tiktok.com/", "https://vxtiktok.com/"
+                                "https://tiktok.com/", "https://tnktok.com/"
                             ),
                             components=buttons if quickvids_url else components,
                             allowed_mentions=AllowedMentions.none(),
@@ -337,7 +342,7 @@ class FixSocials(Extension):
                     else:
                         msg = await message.reply(
                             url[0].replace(
-                                "https://tiktok.com/", "https://vxtiktok.com/"
+                                "https://tiktok.com/", "https://tnktok.com/"
                             ),
                             components=buttons if quickvids_url else components,
                             allowed_mentions=AllowedMentions.none(),
@@ -350,9 +355,13 @@ class FixSocials(Extension):
                             ):
                                 await msg.delete()
                                 continue
-                        await message.suppress_embeds() if (
-                            await message.guild.fetch_member(self.bot.user.id)
-                        ).has_permission(Permissions.MANAGE_MESSAGES) else None
+                        (
+                            await message.suppress_embeds()
+                            if (
+                                await message.guild.fetch_member(self.bot.user.id)
+                            ).has_permission(Permissions.MANAGE_MESSAGES)
+                            else None
+                        )
                         if vote_button and embed:
                             await message.channel.send(
                                 components=vote_button, embed=embed, delete_after=20
@@ -379,9 +388,13 @@ class FixSocials(Extension):
                     if "Post not found" in msg.embeds[0].description:
                         await msg.delete()
                         continue
-                await message.suppress_embeds() if (
-                    await message.guild.fetch_member(self.bot.user.id)
-                ).has_permission(Permissions.MANAGE_MESSAGES) else None
+                (
+                    await message.suppress_embeds()
+                    if (
+                        await message.guild.fetch_member(self.bot.user.id)
+                    ).has_permission(Permissions.MANAGE_MESSAGES)
+                    else None
+                )
                 if vote_button and embed:
                     await message.channel.send(
                         components=vote_button, embed=embed, delete_after=20
@@ -404,9 +417,13 @@ class FixSocials(Extension):
                     allowed_mentions=AllowedMentions.none(),
                 )
                 await asyncio.sleep(0.1)
-                await message.suppress_embeds() if (
-                    await message.guild.fetch_member(self.bot.user.id)
-                ).has_permission(Permissions.MANAGE_MESSAGES) else None
+                (
+                    await message.suppress_embeds()
+                    if (
+                        await message.guild.fetch_member(self.bot.user.id)
+                    ).has_permission(Permissions.MANAGE_MESSAGES)
+                    else None
+                )
                 if vote_button and embed:
                     await message.channel.send(
                         components=vote_button, embed=embed, delete_after=20
@@ -426,9 +443,13 @@ class FixSocials(Extension):
                     allowed_mentions=AllowedMentions.none(),
                 )
                 await asyncio.sleep(0.1)
-                await message.suppress_embeds() if (
-                    await message.guild.fetch_member(self.bot.user.id)
-                ).has_permission(Permissions.MANAGE_MESSAGES) else None
+                (
+                    await message.suppress_embeds()
+                    if (
+                        await message.guild.fetch_member(self.bot.user.id)
+                    ).has_permission(Permissions.MANAGE_MESSAGES)
+                    else None
+                )
                 if vote_button and embed:
                     await message.channel.send(
                         components=vote_button, embed=embed, delete_after=20
@@ -535,9 +556,7 @@ class FixSocials(Extension):
                             author_link,
                         )
                     else:
-                        raise Exception(
-                            "QuickVids returned status " + str(response.status)
-                        )
+                        return None
         except (aiohttp.ClientError, asyncio.TimeoutError):
             return None
 

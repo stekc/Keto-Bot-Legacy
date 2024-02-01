@@ -12,15 +12,23 @@ async def status_refresh(self):
 
         await self.bot.change_presence(
             activity=activity,
-            status=Status.IDLE
-            if os.getenv("STATUS") == "idle"
-            else Status.DND
-            if os.getenv("STATUS") == "dnd"
-            else Status.INVISIBLE
-            if os.getenv("STATUS") == "invisible"
-            else Status.OFFLINE
-            if os.getenv("STATUS") == "offline"
-            else Status.ONLINE,
+            status=(
+                Status.IDLE
+                if os.getenv("STATUS") == "idle"
+                else (
+                    Status.DND
+                    if os.getenv("STATUS") == "dnd"
+                    else (
+                        Status.INVISIBLE
+                        if os.getenv("STATUS") == "invisible"
+                        else (
+                            Status.OFFLINE
+                            if os.getenv("STATUS") == "offline"
+                            else Status.ONLINE
+                        )
+                    )
+                )
+            ),
         )
 
 
