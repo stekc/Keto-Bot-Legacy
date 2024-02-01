@@ -73,12 +73,13 @@ class Utilities(Extension):
 
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                translate_url + f"/api/v1/{source}/{target}/{quote(text)}"
+                translate_url
+                + f"/api/v1/{source}/{target}/{quote(text.replace('/', '[⧸⧸⧸]'))}"
             ) as response:
                 if not response.status == 200:
                     raise Exception(f"{translate_url} returned {response.status}")
                 data = await response.json()
-                translation = data.get("translation", "")
+                translation = data.get("translation", "").replace("[⧸⧸⧸]", "/")
                 detected_language = data.get("info", {}).get("detectedSource", "")
                 return translation, detected_language
 
@@ -121,10 +122,10 @@ class Utilities(Extension):
         lang_modal = Modal(
             ShortText(
                 label="Language to translate to",
-                value="en",
+                value="English",
                 custom_id="short_text",
                 min_length=2,
-                max_length=2,
+                max_length=10,
                 required=True,
             ),
             title="Translate",
@@ -160,12 +161,12 @@ class Utilities(Extension):
                 "Something went wrong trying to translate that.", ephemeral=True
             )
         embed = Embed(
-            title=translation, color=await get_color(ctx.target.author.avatar_url)
+            description=translation[:4096],
+            color=await get_color(ctx.target.author.avatar_url),
         )
-        embed.set_author(
-            name=f"{detected_language if detected_language else from_language} -> {to_language}"
+        embed.set_footer(
+            text=f"{detected_language if detected_language else from_language} -> {to_language} · {str(ctx.target.author.id)}"
         )
-        embed.set_footer(text=str(ctx.target.author.id))
         await modal_ctx.send(embed=embed, components=[jump_button])
 
     @slash_command(name="translate", description="Translate text")
@@ -226,11 +227,12 @@ class Utilities(Extension):
             return await ctx.respond(
                 "Something went wrong trying to translate that.", ephemeral=True
             )
-        embed = Embed(title=translation, color=await get_color(ctx.author.avatar_url))
-        embed.set_author(
-            name=f"{detected_language if detected_language else from_language} -> {to_language}"
+        embed = Embed(
+            description=translation[:4096], color=await get_color(ctx.author.avatar_url)
         )
-        embed.set_footer(text=str(ctx.author.id))
+        embed.set_footer(
+            text=f"{detected_language if detected_language else from_language} -> {to_language} · {str(ctx.author.id)}"
+        )
         await ctx.respond(embed=embed)
 
     @slash_command(name="currency", description="Convert currencies")
