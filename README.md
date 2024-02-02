@@ -8,6 +8,8 @@ Features:
 
 * Currency conversion using [FreecurrencyAPI](https://freecurrencyapi.com)
 
+* Translation using [Lingva Translate](https://github.com/thedaviddelta/lingva-translate)
+
 * Steal emojis using the `/steal` command or context menu application
 
 * Basic moderation commands
