@@ -23,9 +23,7 @@ Features:
 
 Setup:
 
-⚠️ Keto is tested on macOS and Linux. Windows support is not guaranteed.
-
-1. `git clone https://github.com/stekc/keto-bot`
+1. `git clone https://github.com/stekc/Keto-Bot`
 
 2. Rename .env.example to .env and fill out the required fields.
 
@@ -36,6 +34,16 @@ Setup:
 5. `pip3 install -r requirements.txt`
 
 6. `python3 main.py`
+
+Alternatively, you can use Docker:
+
+1. `git clone https://github.com/stekc/Keto-Bot`
+
+2. Rename .env.example to .env and fill out the required fields.
+
+3. `docker build -t keto .`
+
+4. `docker run --name keto -d --restart always --memory-reservation 1G -m 2G keto`
 
 ---
 
