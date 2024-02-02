@@ -10,11 +10,12 @@ from interactions import (
 )
 from interactions.api.events import MessageCreate
 from utils.colorthief import get_color
+from collections import deque
 
 
 class Snipe(Extension):
     bot: AutoShardedClient
-    deleted_msgs = {}
+    deleted_msgs = deque(maxlen=100000)
 
     @listen()
     async def on_message_delete(self, event):
@@ -27,16 +28,14 @@ class Snipe(Extension):
         except AttributeError:
             return
 
-        self.deleted_msgs.update({str(message.channel.id) + "message": message.content})
-        self.deleted_msgs.update(
-            {str(message.channel.id) + "member": message.author.id}
-        )
-        if message.embeds:
-            self.deleted_msgs.update(
-                {str(message.channel.id) + "embed": message.embeds[0].to_dict()}
-            )
-        else:
-            self.deleted_msgs.update({str(message.channel.id) + "embed": None})
+        snipe_data = {
+            "channel_id": str(message.channel.id),
+            "message": message.content,
+            "member_id": message.author.id,
+            "embed": message.embeds[0].to_dict() if message.embeds else None,
+        }
+
+        self.deleted_msgs.appendleft(snipe_data)
 
     @slash_command(
         name="snipe", description="View the last deleted message in a channel"
@@ -45,17 +44,24 @@ class Snipe(Extension):
     async def snipe(self, ctx: SlashContext):
         channel = ctx.channel
 
-        if not str(channel.id) + "message" in self.deleted_msgs:
+        snipe_data = next(
+            (
+                snipe
+                for snipe in self.deleted_msgs
+                if snipe["channel_id"] == str(channel.id)
+            ),
+            None,
+        )
+
+        if not snipe_data:
             await ctx.respond(
                 f"I couldn't find any deleted messages in this channel.", ephemeral=True
             )
             return
 
-        member = await self.bot.fetch_user(
-            self.deleted_msgs[str(channel.id) + "member"]
-        )
-        message = self.deleted_msgs[str(channel.id) + "message"]
-        old_embed = self.deleted_msgs[str(channel.id) + "embed"]
+        member = await self.bot.fetch_user(snipe_data["member_id"])
+        message = snipe_data["message"]
+        old_embed = snipe_data["embed"]
 
         if old_embed:
             author_text = f"Embed from {member} deleted in #{channel.name}"
@@ -100,5 +106,4 @@ class Snipe(Extension):
 
 def setup(bot: AutoShardedClient):
     """Let interactions load the extension"""
-
     Snipe(bot)

@@ -51,7 +51,7 @@ class ErrorHandling(Extension):
                 url="https://discord.gg/wsxncM7skr",
             )
 
-            await event.ctx.send(embed=embed, components=components)
+            await event.ctx.send(embed=embed, components=components, delete_after=300)
 
         embed = {
             "title": f"{'A command errored in ' + guild_name + ' (' + str(guild_id) + ') - ' + str(user_name) + ' (' + str(user_id) + ') - ' + os.getenv('PROJECT_NAME') if event and event.ctx else 'An error occurred - ' + os.getenv('PROJECT_NAME')}",
